@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Livros;
+use App\Models\Livro;
 use App\Http\Requests\StoreLivrosRequest;
 use App\Http\Requests\UpdateLivrosRequest;
+use Illuminate\Validation\Rule;
 
 class LivrosController extends Controller
 {
@@ -15,7 +16,9 @@ class LivrosController extends Controller
      */
     public function index()
     {
-        //
+        $livros = Livro::all()->toArray();
+
+        return view('livros.index', ['livros' => $livros]);
     }
 
     /**
@@ -25,7 +28,7 @@ class LivrosController extends Controller
      */
     public function create()
     {
-        //
+        return view('livros.create');
     }
 
     /**
@@ -36,39 +39,41 @@ class LivrosController extends Controller
      */
     public function store(StoreLivrosRequest $request)
     {
-        //
+        dd('chegou', $request);
+
+        Livro::create($this->validarCampos());
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Livros  $livros
+     * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function show(Livros $livros)
+    public function show(Livro $livro)
     {
-        //
+        return view('livros.show', ['livro' => $livro]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Livros  $livros
+     * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function edit(Livros $livros)
+    public function edit(Livro $livro)
     {
-        //
+        return view('livros.edit', ['livro' => $livro]);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateLivrosRequest  $request
-     * @param  \App\Models\Livros  $livros
+     * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateLivrosRequest $request, Livros $livros)
+    public function update(UpdateLivrosRequest $request, Livro $livro)
     {
         //
     }
@@ -76,11 +81,27 @@ class LivrosController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Livros  $livros
+     * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Livros $livros)
+    public function destroy(Livro $livro)
     {
-        //
+        $livro->delete();
+
+        return redirect('/livros')->with('sucess', 'Registro excluído!');
+        // return back()->with('success', 'Registro excluído!');
+    }
+
+    protected function validarCampos(Livro $livro = null)
+    {
+        if (is_null($livro)) {
+            $livro = new Livro();
+        }
+
+        return $request()->validate([
+            'titulo' => ['required', 'max:100', Rule::unique('livros', 'titulo')->ignore($livro)],
+            'autor' => 'required|max:100',
+            'descricao' => 'max:200'
+        ]);
     }
 }
