@@ -16,7 +16,7 @@ class LivrosController extends Controller
      */
     public function index()
     {
-        $livros = Livro::all()->toArray();
+        $livros = Livro::all();
 
         return view('livros.index', ['livros' => $livros]);
     }
@@ -34,14 +34,14 @@ class LivrosController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreLivrosRequest  $request
+     * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreLivrosRequest $request)
+    public function store(Livro $livro)
     {
-        dd('chegou', $request);
+        $livro->create($this->validarCampos($livro));
 
-        Livro::create($this->validarCampos());
+        return redirect('/livros');
     }
 
     /**
@@ -69,13 +69,14 @@ class LivrosController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateLivrosRequest  $request
      * @param  \App\Models\Livro  $livro
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateLivrosRequest $request, Livro $livro)
+    public function update(Livro $livro)
     {
-        //
+        $livro->update($this->validarCampos($livro));
+
+        return redirect('/livros');
     }
 
     /**
@@ -89,7 +90,6 @@ class LivrosController extends Controller
         $livro->delete();
 
         return redirect('/livros')->with('sucess', 'Registro excluído!');
-        // return back()->with('success', 'Registro excluído!');
     }
 
     protected function validarCampos(Livro $livro = null)
@@ -98,7 +98,7 @@ class LivrosController extends Controller
             $livro = new Livro();
         }
 
-        return $request()->validate([
+        return request()->validate([
             'titulo' => ['required', 'max:100', Rule::unique('livros', 'titulo')->ignore($livro)],
             'autor' => 'required|max:100',
             'descricao' => 'max:200'
